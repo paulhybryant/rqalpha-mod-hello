@@ -1,0 +1,13 @@
+MANIFEST.in
+README.md
+requirements.txt
+setup.py
+rqalpha_mod_local_source/VERSION.txt
+rqalpha_mod_local_source/__init__.py
+rqalpha_mod_local_source/mod.py
+rqalpha_mod_local_source.egg-info/PKG-INFO
+rqalpha_mod_local_source.egg-info/SOURCES.txt
+rqalpha_mod_local_source.egg-info/dependency_links.txt
+rqalpha_mod_local_source.egg-info/not-zip-safe
+rqalpha_mod_local_source.egg-info/requires.txt
+rqalpha_mod_local_source.egg-info/top_level.txt

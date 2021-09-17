@@ -4,9 +4,10 @@ from rqalpha.data.base_data_source import BaseDataSource
 import pandas as pd
 
 __config__ = {
-    "data_path": None,
-    "start_date": None,
-    "end_date": None,
+    'data_path': None,
+    'data_format': None,
+    'start_date': None,
+    'end_date': None,
 }
 
 
@@ -18,6 +19,7 @@ class LocalDataSourceMod(AbstractMod):
         env.set_data_source(
             LocalDataSource(env.config.base.data_bundle_path,
                             mod_config.data_path,
+                            mod_config.data_format,
                             date.fromisoformat(mod_config.start_date),
                             date.fromisoformat(mod_config.end_date)))
 
@@ -27,12 +29,15 @@ class LocalDataSourceMod(AbstractMod):
 
 # Only provide bar data for frequency of 1d
 class LocalDataSource(BaseDataSource):
-    def __init__(self, path, local_data_path, start_date, end_date):
+    def __init__(self, path, data_path, data_format, start_date, end_date):
         super(LocalDataSource, self).__init__(path, None)
-        if local_data_path and start_date and end_date:
-            print('Reading data from %s' % local_data_path)
-            self._df = pd.read_excel(local_data_path)
-            print('Done reading %s' % local_data_path)
+        if data_path and data_format and start_date and end_date:
+            print('Reading data from %s' % data_path)
+            if data_format == 'excel':
+                self._df = pd.read_excel(data_path)
+            if data_format == 'csv':
+                self._df = pd.read_csv(data_path)
+            print('Done reading %s' % data_path)
             self._instruments = set(self._df.order_book_id.to_list())
             self._df['date'] = self._df.date.astype(str)
             self._df = self._df.set_index(['order_book_id', 'date'])

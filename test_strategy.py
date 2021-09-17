@@ -1,51 +1,50 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
+import pathlib
 from rqalpha import run
 from rqalpha.api import *
 
 config = {
-    "base": {
-        "start_date": "2018-07-17",
-        "end_date": "2018-08-18",
-        "accounts": {
-            "stock": 100000
+    'base': {
+        'start_date': '2018-08-17',
+        'end_date': '2018-08-18',
+        'accounts': {
+            'stock': 100000
         },
-        "frequency": "1d",
-        "benchmark": None,
-        "strategy_file": __file__
+        'frequency': '1d',
+        'benchmark': None,
+        'strategy_file': __file__
     },
-    "extra": {
-        "log_level": "verbose",
+    'extra': {
+        'log_level': 'verbose',
     },
-    "mod": {
-        "sys_analyser": {
-            "enabled": True,
-            # "report_save_path": ".",
-            #  "plot": True
+    'mod': {
+        'sys_analyser': {
+            'enabled': True,
+            # 'report_save_path': '.',
+            #  'plot': True
         },
-        "sys_simulation": {
-            "enabled": True,
-            # "matching_type": "last"
+        'sys_simulation': {
+            'enabled': True,
+            # 'matching_type': 'last'
         },
-        "local_source": {
-            "enabled":
-            True,
-            "lib":
-            "rqalpha_mod_local_source",
+        'local_source': {
+            'enabled': True,
+            'lib': 'rqalpha_mod_local_source',
             # 其他配置参数
-            "start_date": "2018-01-01",
-            "end_date": "2021-09-08",
-            "data_path": pathlib.Path(__file__).parent.joinpath("testdata.xlsx"),
+            'start_date': '2018-01-01',
+            'end_date': '2021-09-08',
+            'data_path':
+            pathlib.Path(__file__).parent.joinpath('testdata.csv'),
+            'data_format': 'csv',
         }
     }
 }
 
 
 def init(context):
-    logger.info("init")
-    #  context.s1 = "000001.XSHE"
-    context.s1 = "128022.XSHE"
-    #  update_universe(context.s1)
+    logger.info('init')
+    context.s1 = '128022.XSHE'
     context.fired = False
 
 
@@ -61,6 +60,6 @@ def handle_bar(context, bar_dict):
         context.fired = True
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     # 您可以指定您要传递的参数
     run(config=config)

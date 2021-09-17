@@ -24,12 +24,16 @@ class LocalDataSourceMod(AbstractMod):
     def tear_down(self, code, exception=None):
         pass
 
+
 # Only provide bar data for frequency of 1d
 class LocalDataSource(BaseDataSource):
     def __init__(self, path, local_data_path, start_date, end_date):
         super(LocalDataSource, self).__init__(path, None)
         if local_data_path and start_date and end_date:
+            print('Reading data from %s' % local_data_path)
             self._df = pd.read_excel(local_data_path)
+            print('Done reading %s' % local_data_path)
+            self._instruments = set(self._df.order_book_id.to_list())
             self._df['date'] = self._df.date.astype(str)
             self._df = self._df.set_index(['order_book_id', 'date'])
             self._start_date = start_date
@@ -40,14 +44,12 @@ class LocalDataSource(BaseDataSource):
             self._end_date = None
 
     def get_bar(self, instrument, dt, frequency):
-        if self._df is None:
+        if self._df is None or frequency != '1d' or instrument.order_book_id not in self._instruments:
             return super(LocalDataSource,
                          self).get_bar(instrument, dt, frequency)
 
-        if frequency != '1d':
-            return super(LocalDataSource,
-                         self).get_bar(instrument, dt, frequency)
-        return self._df.loc[(instrument.order_book_id, str(dt.date()))].to_dict()
+        return self._df.loc[(instrument.order_book_id,
+                             str(dt.date()))].to_dict()
 
     def history_bars(self,
                      instrument,
@@ -55,18 +57,18 @@ class LocalDataSource(BaseDataSource):
                      frequency,
                      fields,
                      dt,
-                     skip_suspended=True):
-        if self._df is None:
-            return super(LocalDataSource,
-                         self).get_bar(instrument, dt, frequency)
-
-        if frequency != '1d' or not skip_suspended:
+                     skip_suspended=True,
+                     include_now=False,
+                     adjust_type='pre',
+                     adjust_orig=None):
+        if self._df is None or frequency != '1d' or instrument.order_book_id not in self._instruments:
             return super(LocalDataSource,
                          self).history_bars(instrument, bar_count, frequency,
                                             fields, dt, skip_suspended)
 
         fields = [field for field in fields if field in self._df.columns]
-        return self._df[fields].loc[(instrument.order_book_id, str(dt.date()))].as_matrix()
+        return self._df[fields].loc[(instrument.order_book_id,
+                                     str(dt.date()))].as_matrix()
 
     def available_data_range(self, frequency):
         return self._start_date, self._end_date

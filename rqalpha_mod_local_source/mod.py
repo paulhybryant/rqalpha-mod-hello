@@ -24,13 +24,14 @@ class LocalDataSourceMod(AbstractMod):
     def tear_down(self, code, exception=None):
         pass
 
-
+# Only provide bar data for frequency of 1d
 class LocalDataSource(BaseDataSource):
     def __init__(self, path, local_data_path, start_date, end_date):
         super(LocalDataSource, self).__init__(path, None)
         if local_data_path and start_date and end_date:
-            self._df = pd.read_excel(local_data_path).set_index(
-                'order_book_id')
+            self._df = pd.read_excel(local_data_path)
+            self._df['date'] = self._df.date.astype(str)
+            self._df = self._df.set_index(['order_book_id', 'date'])
             self._start_date = start_date
             self._end_date = end_date
         else:
@@ -46,7 +47,7 @@ class LocalDataSource(BaseDataSource):
         if frequency != '1d':
             return super(LocalDataSource,
                          self).get_bar(instrument, dt, frequency)
-        return self._df.loc[instrument.order_book_id].to_dict()
+        return self._df.loc[(instrument.order_book_id, str(dt.date()))].to_dict()
 
     def history_bars(self,
                      instrument,
@@ -65,7 +66,7 @@ class LocalDataSource(BaseDataSource):
                                             fields, dt, skip_suspended)
 
         fields = [field for field in fields if field in self._df.columns]
-        return self._df[fields].loc[instrument.order_book_id].as_matrix()
+        return self._df[fields].loc[(instrument.order_book_id, str(dt.date()))].as_matrix()
 
     def available_data_range(self, frequency):
         return self._start_date, self._end_date

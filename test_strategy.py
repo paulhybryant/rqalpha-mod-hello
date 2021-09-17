@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
-import itertools
-import os
-from rqalpha.api import *
 import pandas as pd
-from rqalpha.utils.datetime_func import convert_dt_to_int
+from rqalpha.api import *
 from rqalpha import run
+import pathlib
 
 def init(context):
     logger.info("init")
@@ -51,7 +49,7 @@ config = {
             # 其他配置参数
             "start_date": "2018-01-01",
             "end_date": "2021-09-08",
-            "data_path": "/Users/yuhuang/gitrepo/convertible_bond/cache/rqdata/2018-08-17/bond_price.xlsx",
+            "data_path": pathlib.Path(__file__).parent.joinpath("testdata.xlsx"),
         }
     }
 }

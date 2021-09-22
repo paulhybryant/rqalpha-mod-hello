@@ -18,8 +18,7 @@ class LocalDataSourceMod(AbstractMod):
     def start_up(self, env, mod_config):
         env.set_data_source(
             LocalDataSource(env.config.base.data_bundle_path,
-                            mod_config.data_path,
-                            mod_config.data_format,
+                            mod_config.data_path, mod_config.data_format,
                             date.fromisoformat(mod_config.start_date),
                             date.fromisoformat(mod_config.end_date)))
 
@@ -53,8 +52,14 @@ class LocalDataSource(BaseDataSource):
             return super(LocalDataSource,
                          self).get_bar(instrument, dt, frequency)
 
-        return self._df.loc[(instrument.order_book_id,
-                             str(dt.date()))].to_dict()
+        try:
+            bar = self._df.loc[(instrument.order_book_id,
+                                str(dt.date()))].to_dict()
+            return bar
+        except KeyError as e:
+            print('!!!Exception!!! order_book_id: {0}, date: {1}'.format(
+                instrument.order_book_id, dt))
+            raise e
 
     def history_bars(self,
                      instrument,

@@ -1,13 +1,11 @@
 from rqalpha.interface import AbstractMod
 from datetime import date
+from dateutil.relativedelta import relativedelta
 from rqalpha.data.base_data_source import BaseDataSource
 import pandas as pd
 
 __config__ = {
     'data_path': None,
-    'data_format': None,
-    'start_date': None,
-    'end_date': None,
 }
 
 
@@ -18,9 +16,7 @@ class LocalDataSourceMod(AbstractMod):
     def start_up(self, env, mod_config):
         env.set_data_source(
             LocalDataSource(env.config.base.data_bundle_path,
-                            mod_config.data_path, mod_config.data_format,
-                            date.fromisoformat(mod_config.start_date),
-                            date.fromisoformat(mod_config.end_date)))
+                            mod_config.data_path))
 
     def tear_down(self, code, exception=None):
         pass
@@ -28,24 +24,17 @@ class LocalDataSourceMod(AbstractMod):
 
 # Only provide bar data for frequency of 1d
 class LocalDataSource(BaseDataSource):
-    def __init__(self, path, data_path, data_format, start_date, end_date):
+    def __init__(self, path, data_path):
         super(LocalDataSource, self).__init__(path, None)
-        if data_path and data_format and start_date and end_date:
+        if data_path:
             print('Reading data from %s' % data_path)
-            if data_format == 'excel':
-                self._df = pd.read_excel(data_path)
-            if data_format == 'csv':
-                self._df = pd.read_csv(data_path)
+            self._df = pd.read_csv(data_path)
             print('Done reading %s' % data_path)
             self._instruments = set(self._df.order_book_id.to_list())
             self._df['date'] = self._df.date.astype(str)
             self._df = self._df.set_index(['order_book_id', 'date'])
-            self._start_date = start_date
-            self._end_date = end_date
         else:
             self._df = None
-            self._start_date = None
-            self._end_date = None
 
     def get_bar(self, instrument, dt, frequency):
         if self._df is None or frequency != '1d' or instrument.order_book_id not in self._instruments:
@@ -81,4 +70,4 @@ class LocalDataSource(BaseDataSource):
                                      str(dt.date()))].as_matrix()
 
     def available_data_range(self, frequency):
-        return self._start_date, self._end_date
+        return date(2018, 1, 1), date.today() - relativedelta(days=1)
